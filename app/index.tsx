@@ -1,12 +1,56 @@
-import { StyleSheet, TextInput, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, TextInput, View, Text, TouchableOpacity, Button } from 'react-native';
+import {useEffect, useState} from "react";
+import {Link, useRouter} from "expo-router";
+import { getUserEmail, setUserEmail } from '././global';
+import React from 'react';
+import { useNavigation } from '@react-navigation/native';
 
 export default function AuthScreen() {
+
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => null,
+      headerShown: false,
+    });
+  }, [navigation]);
+
+  const router = useRouter();
+  
+  const [mail, setMail] = useState("");
+  const [pass, setPass] = useState("");
+
   const handleLogin = () => {
-    // Logic for login will go here
+
+    const requestOptions = {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+          {
+              email: mail,
+              password: pass
+          }
+      ),
+  }
+
+  fetch("http://localhost:8080/login",requestOptions)
+      .then((response) => response.json())
+      .then((result) => {
+        console.log(result);
+        if(result && result.email === mail){
+          console.log("Login successful");
+          setUserEmail(mail);
+          console.log(getUserEmail() + " is now set");
+          router.push('/(tabs)/FriendsListScreen')
+        }
+      })
+      .catch((error) => console.error(error));
+
   };
 
   const handleSignup = () => {
-    // Logic for signup will go here
+    router.push('/SignupScreen')
   };
 
   return (
@@ -17,11 +61,13 @@ export default function AuthScreen() {
       <TextInput
         style={styles.input}
         placeholder="Enter your email"
+        onChangeText={ (text) => setMail(text)}
       />
       <TextInput
         style={styles.input}
         placeholder="Enter your password"
         secureTextEntry
+        onChangeText={ (text) => setPass(text)}
       />
       
       {/* Custom Login Button */}
@@ -75,4 +121,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-

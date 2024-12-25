@@ -26,17 +26,31 @@ export default function TabLayout() {
           default: {},
         }),
       }}>
-      <Tabs.Screen
-        name="index"
+        <Tabs.Screen
+        name="logout"
         options={{
-          title: 'Home',
+          title: 'Exit App',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="FriendsListScreen"
         options={{
-          title: 'Explore',
+          title: 'FriendsList',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="FriendRequestScreen"
+        options={{
+          title: 'Add Friends',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="MessagingScreen"
+        options={{
+          title: 'Chat Screen',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
