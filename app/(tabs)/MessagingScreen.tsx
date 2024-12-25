@@ -10,7 +10,10 @@ export default function MessagingScreen() {
 
   const searchParams = useSearchParams();
   var friendEmail = searchParams.get('friend'); // Retrieve friend's email from route parameters
+  var messagingState = searchParams.get('state') === 'true';
+
   var userEmail = getUserEmail();
+  
 
   const [messages, setMessages] = useState([]); // message history
   const [messageToSend, setMessageToSend] = useState(""); // message to send
@@ -18,18 +21,34 @@ export default function MessagingScreen() {
   useFocusEffect(
     React.useCallback(() => {
       if (userEmail && friendEmail) {
-        fetchMessages(friendEmail); // Pass the updated friendEmail
+        handleFriendOrGroup(friendEmail, messagingState)
       }
-    }, [userEmail, friendEmail])
+
+    }, [userEmail, friendEmail, messagingState])
   );
 
+const handleFriendOrGroup = (friendEmail:any, messagingState: boolean) => {
+  if(messagingState){
+    fetchMessages(friendEmail);
+  }
+  else{
+    fetchGroupMessages(friendEmail);
+  }
+}
+
   const handleSendMessage = (friendEmail:any, msg:string) => {
-    fetchSendMessage(friendEmail, msg);
+    if(messagingState){
+      fetchSendMessage(friendEmail, msg);
+      console.log("friend message");
+    }
+    else{
+      fetchSendGroupMessage(friendEmail, msg);
+      console.log("group message");
+    }
   };
 
 
   const fetchMessages = (friendEmail: string) =>{
-
     const requestOptions = {  
           method: "GET",
           headers: { 'Content-Type': 'application/json' },
@@ -53,8 +72,31 @@ export default function MessagingScreen() {
           .catch((error) => console.error(error));
   }
 
-  const fetchSendMessage = (friendEmail: any, msg:string) =>{
+  const fetchGroupMessages = (friendEmail: string) =>{
+    const requestOptions = {  
+          method: "GET",
+          headers: { 'Content-Type': 'application/json' },
+      }
+    
+      fetch("http://localhost:8080/groups/"+ friendEmail + "/messages",requestOptions)
+          .then((response) => response.json())
+          .then((result) => {
+            if (result && result.length === 1 && result[0] === "no messages") {
+              // Handle the case where no messages are returned
+              setMessages([]); // Set messages to an empty array
+            } else if (result) {
+              // Format and set messages
+              const formattedMessages = result.map((item: string, index: any) => {
+                const [sender, text] = item.split(':');
+                return { id: index.toString(), sender, text: text.trim() };
+              });
+              setMessages(formattedMessages);
+            }
+          })
+          .catch((error) => console.error(error));
+  }
 
+  const fetchSendMessage = (friendEmail: any, msg:string) =>{
     const requestOptions = {  
           method: "POST",
           headers: { 'Content-Type': 'application/json' },
@@ -75,9 +117,6 @@ export default function MessagingScreen() {
                   sender: userEmail,
                   text: msg.trim(),
                 };
-              
-                console.log("Previous messages:", validPrevMessages); // Log current state
-                console.log("Adding message:", newMessage); // Log the new message
                 
                 // Return updated array
                 return [...validPrevMessages, newMessage];
@@ -87,7 +126,39 @@ export default function MessagingScreen() {
 
           })
           .catch((error) => console.error(error));
+  }
 
+  const fetchSendGroupMessage = (friendEmail: any, msg:string) =>{
+    const requestOptions = {  
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+      }
+    
+      fetch("http://localhost:8080/groups/" + friendEmail + "/send?email=" + userEmail + "&message=" + msg,requestOptions)
+          .then((response) => response.text())
+          .then((result) => {
+            if(result && result === "Message sent to group"){
+              console.log("oluyor");
+              // Add the sent message to the messages state
+              setMessages((prevMessages) => {
+                // Ensure `prevMessages` is always an array
+                const validPrevMessages = Array.isArray(prevMessages) ? prevMessages : [];
+                
+                // Construct the new message
+                const newMessage = {
+                  id: Date.now().toString(),
+                  sender: userEmail,
+                  text: msg.trim(),
+                };
+                
+                // Return updated array
+                return [...validPrevMessages, newMessage];
+              });
+            }
+
+
+          })
+          .catch((error) => console.error(error));
   }
 
 

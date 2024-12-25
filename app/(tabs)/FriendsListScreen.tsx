@@ -54,7 +54,7 @@ export default function FriendsListScreen() {
               <Text style={styles.friendText}>{item}</Text>
               <TouchableOpacity
                 style={styles.button}
-                onPress={() => router.push(`/MessagingScreen?friend=${item}`)}
+                onPress={() => router.push(`/MessagingScreen?friend=${item}&state=${true}`)}
               >
                 <Text style={styles.buttonText}>Message</Text>
               </TouchableOpacity>
