@@ -13,8 +13,6 @@ export default function FriendsListScreen() {
   useFocusEffect(
     React.useCallback(() => {
       userEmail = getUserEmail();
-      console.log('FriendsListScreen mounted');
-      
       if(userEmail){
         fetchFriends(userEmail);
       }
